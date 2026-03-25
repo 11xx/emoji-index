@@ -5,8 +5,8 @@ import urllib.error
 from pathlib import Path
 
 INPUT_PATH  = Path("emoji-base.txt")
-OUTPUT_PATH = Path("emoji-fzf.txt")
-MODEL_NAME  = "qwen3:8b"
+OUTPUT_PATH = Path("emoji-rich.out")
+MODEL_NAME  = "qwen3.5:9b"
 OLLAMA_URL  = "http://localhost:11434/api/generate"
 
 PROMPT_TEMPLATE = """\
