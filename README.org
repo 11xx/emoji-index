@@ -1,0 +1,48 @@
+#+TITLE: emoji-index
+
+A search-optimized emoji list for line pickers (fzf, tofi, rofi, dmenu).
+
+Each line contains the emoji, its Unicode group and subgroup, the official CLDR
+name, a usage label, and AI-generated keywords covering visual appearance,
+emotions, synonyms, tone, internet slang, and usage contexts.
+
+** Format
+Example of what it looks like
+#+begin_example
+😀 | Smileys & Emotion | face-smiling | grinning face | makes someone feel happy and excited | vibes, joy, excitement, laughter, grin, smile, happy, fun, cheerful, upbeat, positive, delighted, amused, giggles, good, awesome, great, emoji, face, laughing, joyous, delight, amusement, giggle
+#+end_example
+
+** Files
+| File            | Contents                                                      |
+|-----------------+---------------------------------------------------------------|
+| =emojis.txt=      | Fully-qualified emojis, no skin tone variants (~1903 entries) |
+| =emojis-full.txt= | All variants including skin tones (~3929 entries)             |
+
+** Usage
+- fzf
+#+begin_src shell
+line=$(fzf < "/path/to/emojis.txt") || return
+printf '%s' "${line%% |*}" | wl-copy --trim-newline
+#+end_src
+
+- tofi
+#+begin_src shell
+fontName='Liberation Sans'
+# NOTE: it's very important to have `noto-fonts-emoji' installed (or any other
+# source for font emojis) to display all emojis preview correctly.
+
+emojiIndex=~/path/to/emoji-index/emojis.txt
+
+cat "${emojiIndex}" |
+    tofi --font="${fontName}" --fuzzy-match=false --horizontal=false --height=25% |
+    awk '{print $1}' |
+    wl-copy --trim-newline
+#+end_src
+
+** Generation
+Keywords were generated offline using [[https://ollama.com/library/qwen3][qwen3:8b]] via Ollama.
+Source data: [[https://unicode.org/Public/emoji/latest/emoji-test.txt][Unicode emoji-test.txt]].
+
+The scripts used are =extract.awk= for preprocessing the downloaded
+=emoji-test.txt=, and =run.py= for the 'document enrichment'.
+
