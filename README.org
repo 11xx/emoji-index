@@ -46,3 +46,4 @@ Source data: [[https://unicode.org/Public/emoji/latest/emoji-test.txt][Unicode e
 The scripts used are =extract.awk= for preprocessing the downloaded
 =emoji-test.txt=, and =run.py= for the 'document enrichment'.
 
+# todo merge keywords for same-emoji with variations for consistent line matching. e.g. skin tone emojis
