@@ -1,2 +1,4 @@
 /emoji*test*
 /emoji-base.txt
+__pycache__/
+*.py[cod]

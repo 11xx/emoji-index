@@ -23,7 +23,7 @@ Write exactly two lines. Nothing else — no labels, no numbering, no markdown.
 Line 1: A natural 6–12 word phrase describing the social or emotional function of this emoji
 in real conversations. Must differ meaningfully from the name above.
 
-Line 2: Target about 20 unique comma-separated lowercase keywords, can be longe when relevant and more verbose for better search matching.
+Line 2: Target about 20 unique comma-separated lowercase keywords, longer only when useful for search matching.
 
 Rules for Line 2:
 - Every keyword must appear EXACTLY ONCE. No duplicates, no near-duplicates.

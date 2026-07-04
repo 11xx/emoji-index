@@ -15,8 +15,8 @@ Example of what it looks like
 ** Files
 | File            | Contents                                                      |
 |-----------------+---------------------------------------------------------------|
-| =emojis.txt=      | Fully-qualified emojis, no skin tone variants (~1903 entries) |
-| =emojis-full.txt= | All variants including skin tones (~3929 entries)             |
+| =emojis.txt=      | Fully-qualified emojis, no skin tone variants (1914 entries) |
+| =emojis-full.txt= | All variants including skin tones (3944 entries)             |
 
 ** Usage
 - fzf
@@ -40,10 +40,11 @@ cat "${emojiIndex}" |
 #+end_src
 
 ** Generation
-Keywords were generated offline using [[https://ollama.com/library/qwen3][qwen3:8b]] via Ollama.
+The original keyword set was generated offline using [[https://ollama.com/library/qwen3][qwen3:8b]]
+via Ollama, then curated with deterministic cleanup rules.
 Source data: [[https://unicode.org/Public/emoji/latest/emoji-test.txt][Unicode emoji-test.txt]].
 
 The scripts used are =extract.awk= for preprocessing the downloaded
-=emoji-test.txt=, and =run.py= for the 'document enrichment'.
-
-# todo merge keywords for same-emoji with variations for consistent line matching. e.g. skin tone emojis
+=emoji-test.txt=, =run.py= for initial enrichment, =add-codepoints.awk= for
+appending Unicode codepoints, =normalize-variants.awk= for sibling variant
+normalization, and =curate.py= for repeatable keyword cleanup.
