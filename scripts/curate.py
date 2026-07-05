@@ -474,7 +474,7 @@ WORD_ALIASES = {
     "gift": ["present", "birthday"],
     "glasses": ["eyewear", "look"],
     "globe": ["world", "earth", "global"],
-    "grinning": ["grin", "smile", "happy"],
+    "grinning": ["grin", "smile", "happy", "laugh"],
     "guitar": ["music", "instrument"],
     "hair": ["hairstyle"],
     "hand": ["gesture", "signal"],
@@ -584,6 +584,54 @@ CONTEXT_ALIAS_BLOCKS = {
     ("Food & Drink", "ball"),
     ("Food & Drink", "dog"),
 }
+
+SEMANTIC_KEYWORD_RULES = (
+    (
+        re.compile(r"\b(laugh(?:ing|ter|s|ed)?|giggl(?:e|ing)?|lol|lmao|rofl|hilarious|funny|humou?r(?:ous)?|jokes?|amusement|amused)\b"),
+        ("laugh", "funny", "joke", "humor"),
+    ),
+    (
+        re.compile(r"\b(joy|joyful|happy|happiness|cheer(?:ful)?|delight(?:ed)?|glad)\b"),
+        ("joy", "happy", "cheerful"),
+    ),
+    (
+        re.compile(r"\b(cry|crying|cries|cried|sob(?:bing)?|teary|tearful|sad|sadness|upset|sorrow)\b"),
+        ("cry", "tears", "sad"),
+    ),
+    (
+        re.compile(r"\b(love|affection(?:ate)?|romantic|romance|adore|heart|hearts|crush)\b"),
+        ("love", "affection", "heart"),
+    ),
+    (
+        re.compile(r"\b(angry|anger|mad|rage|furious|frustrat(?:ed|ion)?|annoy(?:ed|ance)?|irritat(?:ed|ion)?|exasperat(?:ed|ion)?)\b"),
+        ("angry", "frustrated", "annoyed"),
+    ),
+    (
+        re.compile(r"\b(surprise|surprised|surprising|shock(?:ed)?|gasp|astonish(?:ed)?|startled|stunned)\b"),
+        ("surprise", "shock", "gasp"),
+    ),
+    (
+        re.compile(r"\b(tired|exhaust(?:ed|ion)?|sleep|sleepy|sleeping|weary|yawn(?:ing)?|rest|resting)\b"),
+        ("tired", "sleep", "rest"),
+    ),
+    (
+        re.compile(r"\b(confus(?:e|ed|ion)|doubt(?:ful)?|unsure|skeptic(?:al)?|uncertain|puzzled)\b"),
+        ("confused", "doubt", "unsure"),
+    ),
+    (
+        re.compile(r"\b(disgust(?:ed|ing)?|gross|nausea|nauseated|queasy|sick)\b"),
+        ("disgust", "gross", "sick"),
+    ),
+    (
+        re.compile(r"\b(scared|fear|fearful|afraid|terror|nervous|anxious|anxiety|worry|worried)\b"),
+        ("fear", "scared", "anxious", "worry"),
+    ),
+)
+
+LAUGH_CRY_CONTEXT_RE = re.compile(
+    r"\b(laugh(?:ing|ter|s|ed)?|giggl(?:e|ing)?|lol|lmao|rofl|hilarious|funny|humou?r(?:ous)?|joy|joyful|happy)\b"
+)
+SAD_CONTEXT_RE = re.compile(r"\b(sad|sadness|upset|sorrow|distress|grief|heartbreak)\b")
 
 NUMBER_WORDS = {
     "zero": 0,
@@ -781,12 +829,32 @@ def append_many(result: list[str], seen: set[str], values: list[str] | tuple[str
         append_keyword(result, seen, value)
 
 
+def semantic_keywords(row: Row, base_name: str) -> list[str]:
+    if row.group != "Smileys & Emotion":
+        return []
+
+    text = normalize_text(f"{base_name} {row.label}")
+    result: list[str] = []
+    for pattern, keywords in SEMANTIC_KEYWORD_RULES:
+        if pattern.search(text):
+            if (
+                keywords == ("cry", "tears", "sad")
+                and LAUGH_CRY_CONTEXT_RE.search(text)
+                and not SAD_CONTEXT_RE.search(text)
+            ):
+                result.extend(("cry", "tears"))
+                continue
+            result.extend(keywords)
+    return result
+
+
 def keyword_candidates(row: Row, base_name: str, descriptors: list[str]) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
     name_key = normalize_text(base_name)
 
     append_many(result, seen, NAME_KEYWORDS.get(name_key, []))
+    append_many(result, seen, semantic_keywords(row, base_name))
     append_many(result, seen, name_phrases(base_name))
     append_many(result, seen, useful_tokens(base_name))
 
