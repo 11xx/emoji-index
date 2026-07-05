@@ -355,6 +355,7 @@ NAME_KEYWORDS = {
     "ok hand": ["okay", "ok", "approval", "perfect", "chef kiss", "agree"],
     "partying face": ["party", "celebrate", "birthday", "confetti", "fun", "hype"],
     "pleading face": ["please", "beg", "puppy eyes", "cute", "help", "soft"],
+    "phoenix": ["rebirth", "rise", "mythical", "fire", "flame"],
     "raised back of hand": ["raise hand", "stop", "question", "volunteer", "attention"],
     "red heart": ["love", "heart", "romance", "care", "affection"],
     "rice ball": ["rice ball", "onigiri", "rice", "snack", "japanese food", "lunch"],
@@ -583,6 +584,32 @@ WORD_ALIASES = {
 CONTEXT_ALIAS_BLOCKS = {
     ("Food & Drink", "ball"),
     ("Food & Drink", "dog"),
+}
+
+COMPONENT_KEYWORDS = {
+    "U+2695": ("medical", "doctor", "nurse", "medicine", "hospital", "clinic"),
+    "U+2696": ("scales", "justice", "law", "legal", "court"),
+    "U+2708": ("airplane", "plane", "flight", "aviation", "airport"),
+    "U+1F33E": ("farm", "farming", "agriculture", "crop", "field", "harvest"),
+    "U+1F373": ("chef", "cooking", "kitchen", "food", "meal", "pan"),
+    "U+1F37C": ("bottle", "milk", "nursing"),
+    "U+1F384": ("christmas", "holiday", "santa", "festive"),
+    "U+1F393": ("graduation", "cap", "school", "college", "university", "education", "study"),
+    "U+1F3A4": ("microphone", "mic", "music", "song", "stage", "performance"),
+    "U+1F3A8": ("palette", "art", "paint", "creative", "design", "drawing"),
+    "U+1F3EB": ("school", "classroom", "education", "class", "teaching", "learning"),
+    "U+1F3ED": ("factory", "manufacturing", "production", "industrial", "machine"),
+    "U+1F4BB": ("computer", "laptop", "pc", "coding", "programmer", "developer", "software"),
+    "U+1F4BC": ("briefcase", "business", "corporate", "desk", "professional"),
+    "U+1F525": ("fire", "flame", "burning"),
+    "U+1F527": ("wrench", "tool", "repair", "fix", "maintenance", "hardware"),
+    "U+1F52C": ("microscope", "science", "lab", "research", "experiment", "chemistry"),
+    "U+1F680": ("rocket", "space", "launch", "orbit", "spacecraft"),
+    "U+1F692": ("firetruck", "fire engine", "fire", "emergency", "rescue"),
+    "U+1F9BA": ("accessibility", "assistance", "service animal", "guide dog", "vest"),
+    "U+1FA70": ("ballet shoes", "shoes", "dance", "performance", "stage"),
+    "U+1FA79": ("bandage", "healing", "recovery", "repair"),
+    "U+2744": ("snow", "cold", "winter", "arctic"),
 }
 
 SEMANTIC_KEYWORD_RULES = (
@@ -848,6 +875,16 @@ def semantic_keywords(row: Row, base_name: str) -> list[str]:
     return result
 
 
+def component_keywords(row: Row) -> list[str]:
+    if not row.codepoints or "U+200D" not in row.codepoints:
+        return []
+
+    result: list[str] = []
+    for codepoint in row.codepoints.split():
+        result.extend(COMPONENT_KEYWORDS.get(codepoint, ()))
+    return result
+
+
 def keyword_candidates(row: Row, base_name: str, descriptors: list[str]) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
@@ -864,6 +901,8 @@ def keyword_candidates(row: Row, base_name: str, descriptors: list[str]) -> list
         if name_key == "hot dog" and token in {"hot", "dog"}:
             continue
         append_many(result, seen, WORD_ALIASES.get(token, []))
+
+    append_many(result, seen, component_keywords(row))
 
     if row.subgroup == "time":
         append_many(result, seen, time_keywords(base_name))
