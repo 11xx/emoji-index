@@ -59,3 +59,9 @@ The other scripts in =scripts/= cover the earlier stages: =extract.awk= parses
 =emoji-test.txt=, =run.py= drafts labels and keywords through a local Ollama
 model, =add-codepoints.awk= appends codepoints, and =normalize-variants.awk=
 aligns skin tone and hair variants with their base emoji.
+
+** License
+The scripts, usage labels and keywords are public domain under the
+[[file:UNLICENSE][Unlicense]]. The emoji, codepoints, names, groups and subgroups come from
+Unicode's emoji data, © Unicode, Inc., under the Unicode License v3 in
+[[file:LICENSE-UNICODE][LICENSE-UNICODE]].
