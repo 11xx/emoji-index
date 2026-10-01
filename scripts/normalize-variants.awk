@@ -5,7 +5,7 @@
 #   - Injects only each line's own descriptor at the end of keywords
 #   - Normalises label: base emoji's label is used for all variants
 #
-# Usage: awk -f normalise-variants.awk emojis-full.txt emojis-full.txt > emojis-out.txt
+# Usage: awk -f normalize-variants.awk emojis-full.txt emojis-full.txt > emojis-out.txt
 
 BEGIN { FS = " \\| " }
 
