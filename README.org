@@ -1,50 +1,61 @@
 #+TITLE: emoji-index
 
-A search-optimized emoji list for line pickers (fzf, tofi, rofi, dmenu).
+An emoji list built for line pickers such as fzf, tofi, rofi and dmenu.
 
-Each line contains the emoji, its Unicode group and subgroup, the official CLDR
-name, a usage label, and AI-generated keywords covering visual appearance,
-emotions, synonyms, tone, internet slang, and usage contexts.
+A picker matches what you type against the text of each line. Unicode names
+alone miss most of what people search for: "lol" does not find 🤣, "nervous"
+does not find 😅. Each line here carries the emoji, its Unicode group and subgroup,
+its CLDR name, a short usage label, a list of search keywords, and its
+codepoints, so a fuzzy match on a mood, a synonym or a bit of slang lands on
+the right emoji.
 
-** Format
-Example of what it looks like
+The list is plain text, one emoji per line, fields separated by =" | "=. The
+emoji is always the first field, so any picker that hands back the chosen line
+can be finished with one cut.
+
 #+begin_example
-😀 | Smileys & Emotion | face-smiling | grinning face | makes someone feel happy and excited | vibes, joy, excitement, laughter, grin, smile, happy, fun, cheerful, upbeat, positive, delighted, amused, giggles, good, awesome, great, emoji, face, laughing, joyous, delight, amusement, giggle
+😀 | Smileys & Emotion | face-smiling | grinning face | makes someone feel happy and excited | joy, happy, cheerful, grinning face, grinning, face, grin, smile, laugh, reaction, friendly, positive, chat, feeling, mood, texting, message | U+1F600
 #+end_example
 
-** Files
-| File            | Contents                                                      |
-|-----------------+---------------------------------------------------------------|
-| =emojis.txt=      | Fully-qualified emojis, no skin tone variants (1914 entries) |
-| =emojis-full.txt= | All variants including skin tones (3944 entries)             |
+- =emojis.txt= :: fully-qualified emojis without skin tone variants.
+- =emojis-full.txt= :: every fully-qualified emoji, skin tone variants included.
 
-** Usage
-- fzf
+** Get it
+Clone the repository, or fetch the one file you want:
+
 #+begin_src shell
-line=$(fzf < "/path/to/emojis.txt") || return
-printf '%s' "${line%% |*}" | wl-copy --trim-newline
+curl -fLO https://raw.githubusercontent.com/11xx/emoji-index/master/emojis.txt
 #+end_src
 
-- tofi
+** Use it
+Pick with fzf and copy the emoji to the Wayland clipboard:
+
 #+begin_src shell
-fontName='Liberation Sans'
-# NOTE: it's very important to have `noto-fonts-emoji' installed (or any other
-# source for font emojis) to display all emojis preview correctly.
+line=$(fzf < emojis.txt) && printf '%s' "${line%% |*}" | wl-copy
+#+end_src
 
-emojiIndex=~/path/to/emoji-index/emojis.txt
+The same with tofi. An emoji font such as Noto Color Emoji must be installed
+for the glyphs to render:
 
-cat "${emojiIndex}" |
-    tofi --font="${fontName}" --fuzzy-match=false --horizontal=false --height=25% |
+#+begin_src shell
+tofi --fuzzy-match=false --horizontal=false --height=25% < emojis.txt |
     awk '{print $1}' |
     wl-copy --trim-newline
 #+end_src
 
-** Generation
-The original keyword set was generated offline using [[https://ollama.com/library/qwen3][qwen3:8b]]
-via Ollama, then curated with deterministic cleanup rules.
-Source data: [[https://unicode.org/Public/emoji/latest/emoji-test.txt][Unicode emoji-test.txt]].
+** How the list is made
+Rows come from Unicode's [[https://unicode.org/Public/emoji/latest/emoji-test.txt][emoji-test.txt]]. The usage labels were drafted offline
+by a local [[https://ollama.com][Ollama]] model and corrected by hand where they were wrong.
+Keywords are rebuilt deterministically by =scripts/curate.py= from the CLDR
+name, the group and subgroup, curated alias tables and variant descriptors, so
+rerunning it on the committed files changes nothing:
 
-The scripts used are =extract.awk= for preprocessing the downloaded
-=emoji-test.txt=, =run.py= for initial enrichment, =add-codepoints.awk= for
-appending Unicode codepoints, =normalize-variants.awk= for sibling variant
-normalization, and =curate.py= for repeatable keyword cleanup.
+#+begin_src shell
+python3 scripts/curate.py --check   # prints a diff and exits 1 if a file would change
+python3 scripts/curate.py           # rewrites emojis.txt and emojis-full.txt
+#+end_src
+
+The other scripts in =scripts/= cover the earlier stages: =extract.awk= parses
+=emoji-test.txt=, =run.py= drafts labels and keywords through a local Ollama
+model, =add-codepoints.awk= appends codepoints, and =normalize-variants.awk=
+aligns skin tone and hair variants with their base emoji.
